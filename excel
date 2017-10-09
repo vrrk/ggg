@@ -1,4 +1,4 @@
-Public xlfiles As Workbook
+    Public xlfiles As Workbook
     Public target As Workbook
     Public file As Variant
     Public lastrow As Integer
@@ -39,7 +39,7 @@ If InStr(file, "OECM") > 0 Then owner = "OECM"
 If InStr(file, "Functional") > 0 Then owner = "Functional"
       'If InStr(file, "csv") > 0 Then
          Set xlfiles = Workbooks.Open(sItem & "\" & file)
-         xlfiles.Sheets(1).Range("A1:G1").Copy Destination:=target.Sheets(1).Range("A1")
+         xlfiles.Sheets(1).Range("A2:G2").Copy Destination:=target.Sheets(1).Range("A1")
          target.Sheets(1).Range("H1") = "Template name"
          target.Sheets(1).Range("I1") = "OWNER"
          'uf.Show

@@ -33,10 +33,10 @@ NextCode:
     'Dim file As Variant
     file = Dir(sItem & "\")
    While (file <> "")
-   If InStr(file, "REGER") > 0 Then owner = "REGER"
-If InStr(file, "IOB") > 0 Then owner = "IOB"
+   If InStr(file, "REGR") > 0 Then owner = "REGR"
+If InStr(file, "LOB") > 0 Then owner = "LOB"
 If InStr(file, "OECM") > 0 Then owner = "OECM"
-If InStr(file, "Functional") > 0 Then owner = "Functional"
+If InStr(file, "FUNCTIONAL") > 0 Then owner = "FUNCTIONAL"
       'If InStr(file, "csv") > 0 Then
          Set xlfiles = Workbooks.Open(sItem & "\" & file)
          xlfiles.Sheets(1).Range("A2:G2").Copy Destination:=target.Sheets(1).Range("A1")
@@ -51,7 +51,7 @@ If InStr(file, "Functional") > 0 Then owner = "Functional"
             For a = LBound(cols) To UBound(cols)
                 If cols(a) <> "" Then
                             For j = 1 To xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column
-                If xlfiles.Sheets(1).Cells(1, j) = cols(a) Then
+                If Trim(xlfiles.Sheets(1).Cells(1, j)) = cols(a) Then
                 col_d = Split(Cells(1, j).Address(True, False), "$")(0)
                 'MsgBox col_d
                 GoTo l1
@@ -62,7 +62,7 @@ If InStr(file, "Functional") > 0 Then owner = "Functional"
 
 l1: For k = 1 To target.Sheets(1).Cells(1, target.Sheets(1).Columns.Count).End(xlToLeft).Column
 
-                If target.Sheets(1).Cells(1, k) = cols(a) Then
+                If Trim(target.Sheets(1).Cells(1, k)) = cols(a) Then
                 col_s = Split(Cells(1, k).Address(True, False), "$")(0)
                 'MsgBox col_s
                 GoTo l2

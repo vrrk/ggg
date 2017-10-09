@@ -33,10 +33,17 @@ NextCode:
     'Dim file As Variant
     file = Dir(sItem & "\")
    While (file <> "")
+   If InStr(file, "REGER") > 0 Then owner = "REGER"
+If InStr(file, "IOB") > 0 Then owner = "IOB"
+If InStr(file, "OECM") > 0 Then owner = "OECM"
+If InStr(file, "Functional") > 0 Then owner = "Functional"
       'If InStr(file, "csv") > 0 Then
          Set xlfiles = Workbooks.Open(sItem & "\" & file)
+         xlfiles.Sheets(1).Range("A1:G1").Copy Destination:=target.Sheets(1).Range("A1")
+         target.Sheets(1).Range("H1") = "Template name"
+         target.Sheets(1).Range("I1") = "OWNER"
          'uf.Show
-         MsgBox file
+         'MsgBox file
          cols = Split(InputBox("Enter col separated by ;"), ";")
          'For i = 1 To xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column
             
@@ -51,7 +58,10 @@ NextCode:
                 End If
                 Next j
                 
-l1:                 For k = 1 To target.Sheets(1).Cells(1, target.Sheets(1).Columns.Count).End(xlToLeft).Column
+'          xlfiles.Sheets(1).Range("A1:" & Split(Cells(1, xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column).Address(True, False), "$")(0) & xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column).Copy Destination:=target.Sheets(1).Range("A1")
+
+l1: For k = 1 To target.Sheets(1).Cells(1, target.Sheets(1).Columns.Count).End(xlToLeft).Column
+
                 If target.Sheets(1).Cells(1, k) = cols(a) Then
                 col_s = Split(Cells(1, k).Address(True, False), "$")(0)
                 'MsgBox col_s
@@ -79,6 +89,15 @@ l2:                 For l = 2 To xlfiles.Sheets(1).Range(col_d & Rows.Count).End
          
          xlfiles.Close SaveChanges:=False
          lastrow = target.Sheets(1).Range("H" & Rows.Count).End(xlUp).Row + 1
+''         For k = 1 To target.Sheets(1).Cells(1, target.Sheets(1).Columns.Count).End(xlToLeft).Column
+''            If Sheets(1).Cells(1, k) <> "" Then
+''
+''                For Z = 2 To Sheets(1).Range(Split(Cells(1, k).Address(True, False), "$")(0) & Rows.Count).End(xlUp).Row
+''
+''                Next Z
+''
+''            End If
+''         Next k
       'End If
         file = Dir
     Wend

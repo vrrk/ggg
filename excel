@@ -1,0 +1,86 @@
+Public xlfiles As Workbook
+    Public target As Workbook
+    Public file As Variant
+    Public lastrow As Integer
+    Public loopvar As Integer
+    
+Sub main()
+
+Application.ScreenUpdating = False
+Application.DisplayAlerts = False
+    lastrow = 0
+    Dim fldr As FileDialog
+    Dim sItem As String
+    Dim col_d, col_s As String
+    Dim owner As String
+    Dim cols() As String
+    
+    Set target = ThisWorkbook
+    
+    Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
+    With fldr
+        .Title = "Select the Folder"
+        .AllowMultiSelect = False
+        .InitialFileName = Application.DefaultFilePath
+        If .Show <> -1 Then GoTo NextCode
+        sItem = .SelectedItems(1)
+    End With
+NextCode:
+    GetFolder = sItem
+    Set fldr = Nothing
+    
+    'LOOP THROUGH CSV AND FILL
+    'Dim file As Variant
+    file = Dir(sItem & "\")
+   While (file <> "")
+      'If InStr(file, "csv") > 0 Then
+         Set xlfiles = Workbooks.Open(sItem & "\" & file)
+         'uf.Show
+         MsgBox file
+         cols = Split(InputBox("Enter col separated by ;"), ";")
+         'For i = 1 To xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column
+            
+            
+            For a = LBound(cols) To UBound(cols)
+                If cols(a) <> "" Then
+                            For j = 1 To xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column
+                If xlfiles.Sheets(1).Cells(1, j) = cols(a) Then
+                col_d = Split(Cells(1, j).Address(True, False), "$")(0)
+                'MsgBox col_d
+                GoTo l1
+                End If
+                Next j
+                
+l1:                 For k = 1 To target.Sheets(1).Cells(1, target.Sheets(1).Columns.Count).End(xlToLeft).Column
+                If target.Sheets(1).Cells(1, k) = cols(a) Then
+                col_s = Split(Cells(1, k).Address(True, False), "$")(0)
+                'MsgBox col_s
+                GoTo l2
+                End If
+                Next k
+                
+                If target.Sheets(1).Range("H" & Rows.Count).End(xlUp).Row > 1 Then
+                lastrow = target.Sheets(1).Range("H" & Rows.Count).End(xlUp).Row + 1
+                End If
+                
+l2:                 For l = 2 To xlfiles.Sheets(1).Range(col_d & Rows.Count).End(xlUp).Row
+                
+                target.Sheets(1).Range(col_s & CStr(l + lastrow)) = xlfiles.Sheets(1).Range(col_d & CStr(l))
+                target.Sheets(1).Range("H" & CStr(l + lastrow)) = file
+                target.Sheets(1).Range("I" & CStr(l + lastrow)) = owner
+                
+                
+                
+                Next l
+
+                End If
+            Next a
+         'Next i
+         
+         xlfiles.Close SaveChanges:=False
+         lastrow = target.Sheets(1).Range("H" & Rows.Count).End(xlUp).Row + 1
+      'End If
+        file = Dir
+    Wend
+    
+End Sub

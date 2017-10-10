@@ -1,105 +1,63 @@
-    Public xlfiles As Workbook
-    Public target As Workbook
-    Public file As Variant
-    Public lastrow As Integer
-    Public loopvar As Integer
+Sub GetFolder()
     
-Sub main()
-
-Application.ScreenUpdating = False
-Application.DisplayAlerts = False
-    lastrow = 0
-    Dim fldr As FileDialog
-    Dim sItem As String
-    Dim col_d, col_s As String
-    Dim owner As String
-    Dim cols() As String
-    
-    Set target = ThisWorkbook
-    
+    Application.ScreenUpdating = False
+    mn = ThisWorkbook.Name
+    lcl = Range("XFD1").End(xlToLeft).Column
     Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
     With fldr
-        .Title = "Select the Folder"
+        .Title = "Select a Folder"
         .AllowMultiSelect = False
-        .InitialFileName = Application.DefaultFilePath
-        If .Show <> -1 Then GoTo NextCode
+        .InitialFileName = strPath
+        If .Show <> -1 Then Exit Sub
         sItem = .SelectedItems(1)
     End With
 NextCode:
-    GetFolder = sItem
-    Set fldr = Nothing
+    pth = sItem & "\"
+    Dim r As Range
+    rw = 2
     
-    'LOOP THROUGH CSV AND FILL
-    'Dim file As Variant
-    file = Dir(sItem & "\")
-   While (file <> "")
-   If InStr(file, "REGR") > 0 Then owner = "REGR"
-If InStr(file, "LOB") > 0 Then owner = "LOB"
-If InStr(file, "OECM") > 0 Then owner = "OECM"
-If InStr(file, "FUNCTIONAL") > 0 Then owner = "FUNCTIONAL"
-      'If InStr(file, "csv") > 0 Then
-         Set xlfiles = Workbooks.Open(sItem & "\" & file)
-         xlfiles.Sheets(1).Range("A2:G2").Copy Destination:=target.Sheets(1).Range("A1")
-         target.Sheets(1).Range("H1") = "Template name"
-         target.Sheets(1).Range("I1") = "OWNER"
-         'uf.Show
-         'MsgBox file
-         cols = Split(InputBox("Enter col separated by ;"), ";")
-         'For i = 1 To xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column
-            
-            
-            For a = LBound(cols) To UBound(cols)
-                If cols(a) <> "" Then
-                            For j = 1 To xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column
-                If Trim(xlfiles.Sheets(1).Cells(1, j)) = cols(a) Then
-                col_d = Split(Cells(1, j).Address(True, False), "$")(0)
-                'MsgBox col_d
-                GoTo l1
-                End If
-                Next j
-                
-'          xlfiles.Sheets(1).Range("A1:" & Split(Cells(1, xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column).Address(True, False), "$")(0) & xlfiles.Sheets(1).Cells(1, xlfiles.Sheets(1).Columns.Count).End(xlToLeft).Column).Copy Destination:=target.Sheets(1).Range("A1")
-
-l1: For k = 1 To target.Sheets(1).Cells(1, target.Sheets(1).Columns.Count).End(xlToLeft).Column
-
-                If Trim(target.Sheets(1).Cells(1, k)) = cols(a) Then
-                col_s = Split(Cells(1, k).Address(True, False), "$")(0)
-                'MsgBox col_s
-                GoTo l2
-                End If
-                Next k
-                
-                If target.Sheets(1).Range("H" & Rows.Count).End(xlUp).Row > 1 Then
-                lastrow = target.Sheets(1).Range("H" & Rows.Count).End(xlUp).Row + 1
-                End If
-                
-l2:                 For l = 2 To xlfiles.Sheets(1).Range(col_d & Rows.Count).End(xlUp).Row
-                
-                target.Sheets(1).Range(col_s & CStr(l + lastrow)) = xlfiles.Sheets(1).Range(col_d & CStr(l))
-                target.Sheets(1).Range("H" & CStr(l + lastrow)) = file
-                target.Sheets(1).Range("I" & CStr(l + lastrow)) = owner
-                
-                
-                
-                Next l
-
-                End If
-            Next a
-         'Next i
-         
-         xlfiles.Close SaveChanges:=False
-         lastrow = target.Sheets(1).Range("H" & Rows.Count).End(xlUp).Row + 1
-''         For k = 1 To target.Sheets(1).Cells(1, target.Sheets(1).Columns.Count).End(xlToLeft).Column
-''            If Sheets(1).Cells(1, k) <> "" Then
-''
-''                For Z = 2 To Sheets(1).Range(Split(Cells(1, k).Address(True, False), "$")(0) & Rows.Count).End(xlUp).Row
-''
-''                Next Z
-''
-''            End If
-''         Next k
-      'End If
-        file = Dir
-    Wend
+    fl = Dir(pth)
+    Do While Len(fl) > 0
+        Workbooks.Open pth & fl
+        For i = 1 To lcl
+            Workbooks(mn).Activate
+            cl = Cells(1, i).Value
+            Workbooks(fl).Activate
+            Sheets(1).Activate
+            Set r = Rows("2:2").Find(cl, LookIn:=xlValues, lookat:=xlWhole)
+            If Not r Is Nothing Then
+                lrw = Range("A65536").End(xlUp).Row
+                Range(Cells(3, r.Column), Cells(lrw, r.Column)).Copy
+                Workbooks(mn).Activate
+                Cells(rw, i).Select
+                ActiveSheet.Paste
+            End If
+        Next i
+        Set r = Cells.Find("REGR", LookIn:=xlValues, lookat:=xlWhole)
+        If Not r Is Nothing Then owner = "REGR"
+        Set r = Cells.Find("LOB", LookIn:=xlValues, lookat:=xlWhole)
+        If Not r Is Nothing Then owner = "LOB"
+        Set r = Cells.Find("OECM", LookIn:=xlValues, lookat:=xlWhole)
+        If Not r Is Nothing Then owner = "OECM"
+        Set r = Cells.Find("Functional", LookIn:=xlValues, lookat:=xlWhole)
+        If Not r Is Nothing Then owner = "Functional"
+        Application.DisplayAlerts = False
+        Workbooks(fl).Close
+        Application.DisplayAlerts = True
+        lrw = Range("A1048576").End(xlUp).Row
+        If rw > 2 Then rw = rw + 1
+        For i = rw To lrw
+            Cells(i, lcl + 1) = fl
+            Cells(i, lcl + 2) = owner
+        Next i
+        fl = Dir
+        rw = Range("A1048576").End(xlUp).Row
+    Loop
+    Cells(1, lcl + 1) = "FILE NAME"
+    Cells(1, lcl + 2) = "OWNER"
+    Range("a1").Select
+    
+    Application.ScreenUpdating = True
+    MsgBox "Processing Complete !", vbInformation
     
 End Sub

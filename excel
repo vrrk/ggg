@@ -1,63 +1,6 @@
-Sub GetFolder()
-    
-    Application.ScreenUpdating = False
-    mn = ThisWorkbook.Name
-    lcl = Range("XFD1").End(xlToLeft).Column
-    Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
-    With fldr
-        .Title = "Select a Folder"
-        .AllowMultiSelect = False
-        .InitialFileName = strPath
-        If .Show <> -1 Then Exit Sub
-        sItem = .SelectedItems(1)
-    End With
-NextCode:
-    pth = sItem & "\"
-    Dim r As Range
-    rw = 2
-    
-    fl = Dir(pth)
-    Do While Len(fl) > 0
-        Workbooks.Open pth & fl
-        For i = 1 To lcl
-            Workbooks(mn).Activate
-            cl = Cells(1, i).Value
-            Workbooks(fl).Activate
-            Sheets(1).Activate
-            Set r = Rows("2:2").Find(cl, LookIn:=xlValues, lookat:=xlWhole)
-            If Not r Is Nothing Then
-                lrw = Range("A65536").End(xlUp).Row
-                Range(Cells(3, r.Column), Cells(lrw, r.Column)).Copy
-                Workbooks(mn).Activate
-                Cells(rw, i).Select
-                ActiveSheet.Paste
-            End If
-        Next i
-        Set r = Cells.Find("REGR", LookIn:=xlValues, lookat:=xlWhole)
-        If Not r Is Nothing Then owner = "REGR"
-        Set r = Cells.Find("LOB", LookIn:=xlValues, lookat:=xlWhole)
-        If Not r Is Nothing Then owner = "LOB"
-        Set r = Cells.Find("OECM", LookIn:=xlValues, lookat:=xlWhole)
-        If Not r Is Nothing Then owner = "OECM"
-        Set r = Cells.Find("Functional", LookIn:=xlValues, lookat:=xlWhole)
-        If Not r Is Nothing Then owner = "Functional"
-        Application.DisplayAlerts = False
-        Workbooks(fl).Close
-        Application.DisplayAlerts = True
-        lrw = Range("A1048576").End(xlUp).Row
-        If rw > 2 Then rw = rw + 1
-        For i = rw To lrw
-            Cells(i, lcl + 1) = fl
-            Cells(i, lcl + 2) = owner
-        Next i
-        fl = Dir
-        rw = Range("A1048576").End(xlUp).Row
-    Loop
-    Cells(1, lcl + 1) = "FILE NAME"
-    Cells(1, lcl + 2) = "OWNER"
-    Range("a1").Select
-    
-    Application.ScreenUpdating = True
-    MsgBox "Processing Complete !", vbInformation
-    
-End Sub
+Hiiiiiiiiii
+Hiiiiiiiiiiiiiiii
+Hiiiiiiiiii
+
+Hiiiiiiiiiiiiiiiiiiiii
+Hiiiii

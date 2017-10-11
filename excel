@@ -1,6 +1,107 @@
-Hiiiiiiiiii
-Hiiiiiiiiiiiiiiii
-Hiiiiiiiiii
+Sub GetFolder()
+    Application.ScreenUpdating = False
+    mn = ThisWorkbook.Name
+    lcl = Range("XFD1").End(xlToLeft).Column
+    Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
 
-Hiiiiiiiiiiiiiiiiiiiii
-Hiiiii
+    With fldr
+
+        .Title = "Select a Folder"
+        .AllowMultiSelect = False
+        .InitialFileName = strPath
+        If .Show <> -1 Then Exit Sub
+         sItem = .SelectedItems(1)
+
+    End With
+
+NextCode:
+    Range("A2:XFD10000").Clear
+    If Cells(1, lcl - 1) = "FILE NAME" Then
+        Range(Cells(1, lcl - 1), Cells(10000, lcl)).Clear
+        lcl = Range("XFD1").End(xlToLeft).Column
+    End If
+    pth = sItem & "\"
+
+    Dim r As Range
+    rw = 2
+    fl = Dir(pth)
+
+    Do While Len(fl) > 0
+
+        Workbooks.Open pth & fl
+
+        For i = 1 To lcl
+
+            Workbooks(mn).Activate
+
+            cl = Cells(1, i).Value
+
+            Workbooks(fl).Activate
+
+            Sheets(1).Activate
+
+            Set r = Workbooks(fl).ActiveSheet.Range("A2:XFD2").Find(cl, LookIn:=xlValues, lookat:=xlWhole)
+
+            If Not r Is Nothing Then
+
+                lrw = Workbooks(fl).ActiveSheet.Range("B2").End(xlDown).Row
+
+                Workbooks(fl).ActiveSheet.Range(Workbooks(fl).ActiveSheet.Cells(3, r.Column), Workbooks(fl).ActiveSheet.Cells(lrw, r.Column)).Copy
+
+                Workbooks(mn).Activate
+
+                Cells(rw, i).Select
+
+                ActiveSheet.Paste
+
+            End If
+
+        Next i
+        
+        owner = ""
+        If InStr(1, UCase(fl), "REGR") >= 1 Then owner = "REGR"
+        If InStr(1, UCase(fl), "LOB") >= 1 Then owner = "LOB"
+        If InStr(1, UCase(fl), "OECM") >= 1 Then owner = "OECM"
+        If InStr(1, UCase(fl), "Functional") >= 1 Then owner = "Functional"
+        
+
+        Application.DisplayAlerts = False
+
+        Workbooks(fl).Close
+
+        Application.DisplayAlerts = True
+
+       lrw = ThisWorkbook.ActiveSheet.Range("A1048576").End(xlUp).Row
+
+'        If rw > 2 Then rw = rw + 1
+
+        For i = rw To lrw
+
+            Cells(i, lcl + 1) = fl
+
+            Cells(i, lcl + 2) = owner
+
+        Next i
+
+        fl = Dir
+
+        rw = Range("A1048576").End(xlUp).Row + 1
+
+    Loop
+
+    Cells(1, lcl + 1) = "FILE NAME"
+
+    Cells(1, lcl + 2) = "OWNER"
+
+    Range("a1").Select
+
+    
+
+    Application.ScreenUpdating = True
+
+    MsgBox "Processing Complete !", vbInformation
+
+    
+
+End Sub
+

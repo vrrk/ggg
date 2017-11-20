@@ -1,137 +1,49 @@
-Sub GetFolder()
-        Application.ScreenUpdating = False
-        mn = ThisWorkbook.Name
-        lcl = Range("XFD1").End(xlToLeft).Column
-        Set fldr = Application.FileDialog(msoFileDialogFolderPicker)
-     
-        With fldr
-            .Title = "Select a Folder"
-            .AllowMultiSelect = False
-            .InitialFileName = strPath
-            If .Show <> -1 Then Exit Sub
-             sItem = .SelectedItems(1)
-        End With
-     
-NextCode:
-        Range("A2:XFD10000").Clear
-        If Cells(1, lcl - 1) = "FILE NAME" Then
-            Range(Cells(1, lcl - 1), Cells(10000, lcl)).Clear
-            lcl = Range("XFD1").End(xlToLeft).Column
+Sub Update_PIA()
+    
+    Application.ScreenUpdating = False
+    mn = ThisWorkbook.Name
+    lcl = Range("XFD1").End(xlToLeft).Column
+    MsgBox "Please Select PIA File"
+    file2 = Application.GetOpenFilename(FileFilter:="Excel Files (*.XL*), *.XL*", Title:="Select PIA File")
+    If file2 = False Then Exit Sub
+    
+    MsgBox "Please Select Monetary File"
+    file1 = Application.GetOpenFilename(FileFilter:="Excel Files (*.XL*), *.XL*", Title:="Select Monetary File")
+    If file1 = False Then Exit Sub
+    
+    Workbooks.Open file1
+    Workbooks.Open file2
+    
+    file1 = Dir(file1)
+    file2 = Dir(file2)
+    
+    Dim r As Range
+    Dim vl As Range
+    Workbooks(file1).Activate
+    lrw = Workbooks(file1).ActiveSheet.Range("B1048576").End(xlUp).Row
+    Set r = Workbooks(file2).ActiveSheet.Range("J2:J1048576")
+    
+    For i = 2 To lrw
+        target = Cells(i, "B")
+        Set vl = r.Find(target, LookIn:=xlValues, lookat:=xlWhole) 'after:=Range("A1"),
+        If Not vl Is Nothing Then
+            rw = vl.Row
+            Cells(i, "M") = Workbooks(file2).ActiveSheet.Range("C" & rw & "")
+            Cells(i, "N") = Workbooks(file2).ActiveSheet.Range("D" & rw & "")
+            firstAddress = vl.Address
+            Do
+                Set vl = r.FindNext(vl)
+                If vl.Address = firstAddress Then GoTo skp
+                rw = vl.Row
+                Cells(i, "O") = Workbooks(file2).ActiveSheet.Range("C" & rw & "")
+                Cells(i, "P") = Workbooks(file2).ActiveSheet.Range("D" & rw & "")
+            Loop While Not vl Is Nothing And vl.Address <> firstAddress
+skp:
         End If
-        pth = sItem & "\"
-     
-        Dim r As Range
-        rw = 2
-        fl = Dir(pth)
-        Do While Len(fl) > 0
-            Workbooks.Open pth & fl
-            For i = 1 To lcl
-                Workbooks(mn).Activate
-                cl = Cells(1, i).Value
-                Workbooks(fl).Activate
-                Sheets(1).Activate
-                Set r = Workbooks(fl).ActiveSheet.Range("A2:XFD2").Find(cl, LookIn:=xlValues, lookat:=xlWhole)
-     
-                If Not r Is Nothing Then
-                    lrw = Workbooks(fl).ActiveSheet.Range("B2").End(xlDown).Row
-                    Workbooks(fl).ActiveSheet.Range(Workbooks(fl).ActiveSheet.Cells(3, r.Column), Workbooks(fl).ActiveSheet.Cells(lrw, r.Column)).Copy
-                    Workbooks(mn).Activate
-                    Cells(rw, i).Select
-                    ActiveSheet.Paste
-                End If
-            Next i
-            
-            owner = ""
-            If InStr(1, UCase(fl), "REGR") >= 1 Then owner = "REGR"
-            If InStr(1, UCase(fl), "LOB") >= 1 Then owner = "LOB"
-            If InStr(1, UCase(fl), "OECM") >= 1 Then owner = "OECM"
-            If InStr(1, UCase(fl), "Functional") >= 1 Then owner = "Functional"
-            
-     
-            Application.DisplayAlerts = False
-            Workbooks(fl).Close
-            Application.DisplayAlerts = True
-     
-           lrw = ThisWorkbook.ActiveSheet.Range("A1048576").End(xlUp).Row
-            For i = rw To lrw
-                Cells(i, lcl + 1) = fl
-                Cells(i, lcl + 2) = owner
-            Next i
-            fl = Dir
-            rw = Range("A1048576").End(xlUp).Row + 1
-     
-        Loop
-     
-        Cells(1, lcl + 1) = "FILE NAME"
-        Cells(1, lcl + 2) = "OWNER"
-        
-        Range(Cells(1, 1), Cells(1, lcl + 2)).Font.Bold = True
-        cl = Range("A1:XFD1").Find("PRI DDA", LookIn:=xlValues, lookat:=xlWhole).Column
-        
-        ActiveWorkbook.Worksheets("Sheet1").Sort.SortFields.Clear
-        ActiveWorkbook.Worksheets("Sheet1").Sort.SortFields.Add Key:=Range(Cells(2, cl), Cells(lrw, cl)) _
-            , SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
-        With ActiveWorkbook.Worksheets("Sheet1").Sort
-            .SetRange Range(Cells(1, 1), Cells(lrw, lcl + 2))
-            .Header = xlYes
-            .MatchCase = False
-            .Orientation = xlTopToBottom
-            .SortMethod = xlPinYin
-            .Apply
-        End With
-        
-        Range(Cells(1, 1), Cells(lrw, lcl + 2)).Select
-        Selection.Borders(xlDiagonalDown).LineStyle = xlNone
-        Selection.Borders(xlDiagonalUp).LineStyle = xlNone
-        With Selection.Borders(xlEdgeLeft)
-            .LineStyle = xlContinuous
-            .ColorIndex = 0
-            .TintAndShade = 0
-            .Weight = xlThin
-        End With
-        With Selection.Borders(xlEdgeTop)
-            .LineStyle = xlContinuous
-            .ColorIndex = 0
-            .TintAndShade = 0
-            .Weight = xlThin
-        End With
-        With Selection.Borders(xlEdgeBottom)
-            .LineStyle = xlContinuous
-            .ColorIndex = 0
-            .TintAndShade = 0
-            .Weight = xlThin
-        End With
-        With Selection.Borders(xlEdgeRight)
-            .LineStyle = xlContinuous
-            .ColorIndex = 0
-            .TintAndShade = 0
-            .Weight = xlThin
-        End With
-        With Selection.Borders(xlInsideVertical)
-            .LineStyle = xlContinuous
-            .ColorIndex = 0
-            .TintAndShade = 0
-            .Weight = xlThin
-        End With
-        With Selection.Borders(xlInsideHorizontal)
-            .LineStyle = xlContinuous
-            .ColorIndex = 0
-            .TintAndShade = 0
-            .Weight = xlThin
-        End With
-        
-        st = ActiveSheet.Name
-        Sheets.Add after:=ActiveSheet
-        Sheets(st).Activate
-        Selection.Copy
-        ActiveSheet.Next.Select
-        Range("a1").Select
-        ActiveSheet.Paste
-        pth = Split(pth, "\")
-        ActiveSheet.Name = pth(UBound(pth) - 1)
-        Range("a1").Select
-        Application.ScreenUpdating = True
-        MsgBox "Processing Complete !", vbInformation
-     
-    End Sub
+    Next i
+    
+    Application.ScreenUpdating = True
+    MsgBox "PIA File Updation Complete !", vbInformation
+    
+End Sub
 
